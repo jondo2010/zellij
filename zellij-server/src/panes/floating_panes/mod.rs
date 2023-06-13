@@ -782,8 +782,8 @@ impl FloatingPanes {
             self.set_force_render();
             return true;
         } else if let Some(pane) = self.get_pane_at_mut(&position, search_selectable) {
-            let clicked_on_frame = pane.position_is_on_frame(&position);
-            if show_panes && clicked_on_frame {
+            let clicked_on_frame = pane.position_on_frame(&position);
+            if show_panes && clicked_on_frame.is_some() {
                 let pid = pane.pid();
                 if self.pane_being_moved_with_mouse.is_none() {
                     self.set_pane_being_moved_with_mouse(pid, position);

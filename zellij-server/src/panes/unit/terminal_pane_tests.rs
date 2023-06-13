@@ -1,7 +1,7 @@
 use super::super::TerminalPane;
-use crate::panes::sixel::SixelImageStore;
 use crate::panes::LinkHandler;
 use crate::tab::Pane;
+use crate::{panes::sixel::SixelImageStore, tab::BorderLocation};
 use ::insta::assert_snapshot;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -448,53 +448,140 @@ pub fn pane_with_frame_position_is_on_frame() {
     terminal_pane.set_content_offset(Offset::frame(1));
 
     // row above pane: no border
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 9)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 70)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 129)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(9, 9)), None);
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(9, 10)), None);
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(9, 11)), None);
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(9, 70)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(9, 129)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(9, 130)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(9, 131)),
+        None
+    );
 
     // first row:  border for 10 <= col <= 130
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 9)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(10, 10)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(10, 11)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(10, 70)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(10, 129)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(10, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(10, 9)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 10)),
+        Some(BorderLocation::TopLeft)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 11)),
+        Some(BorderLocation::Top)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 11)),
+        Some(BorderLocation::Top)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 129)),
+        Some(BorderLocation::Top)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 130)),
+        Some(BorderLocation::TopRight)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 131)),
+        None
+    );
 
     // second row: border only at col=10,130
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 9)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(11, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 70)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(11, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(11, 9)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 10)),
+        Some(BorderLocation::Left)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 11)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 70)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 130)),
+        Some(BorderLocation::Right)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 131)),
+        None
+    );
 
     // row in the middle: border only at col=10,130
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 9)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(15, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 70)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(15, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(15, 9)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 10)),
+        Some(BorderLocation::Left)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 11)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 70)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 130)),
+        Some(BorderLocation::Right)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 131)),
+        None
+    );
 
     // last row: border for 10 <= col <= 130
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(29, 9)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(29, 10)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(29, 11)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(29, 70)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(29, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(29, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(29, 9)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 10)),
+        Some(BorderLocation::BottomLeft)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 11)),
+        Some(BorderLocation::Bottom)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 11)),
+        Some(BorderLocation::Bottom)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 130)),
+        Some(BorderLocation::BottomRight)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 131)),
+        None
+    );
 
     // row below pane: no border
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 70)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 131)));
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 10)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 11)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 70)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 130)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 131)),
+        None
+    );
 }
 
 #[test]
@@ -534,53 +621,140 @@ pub fn pane_with_bottom_and_right_borders_position_is_on_frame() {
     terminal_pane.set_content_offset(Offset::shift(1, 1));
 
     // row above pane: no border
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 9)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 70)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 129)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(9, 9)), None);
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(9, 10)), None);
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(9, 11)), None);
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(9, 70)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(9, 129)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(9, 130)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(9, 131)),
+        None
+    );
 
     // first row: border only at col=130
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 9)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 70)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 129)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(10, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(10, 9)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 10)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 11)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 70)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 129)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 130)),
+        Some(BorderLocation::Right)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 131)),
+        None
+    );
 
     // second row: border only at col=130
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 9)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 70)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(11, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(11, 9)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 10)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 11)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 70)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 130)),
+        Some(BorderLocation::Right)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 131)),
+        None
+    );
 
     // row in the middle: border only at col=130
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 9)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 70)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(15, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(15, 9)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 10)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 11)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 70)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 130)),
+        Some(BorderLocation::Right)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 131)),
+        None
+    );
 
     // last row: border for 10 <= col <= 130
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(29, 9)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(29, 10)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(29, 11)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(29, 70)));
-    assert!(terminal_pane.position_is_on_frame(&Position::new(29, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(29, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(29, 9)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 10)),
+        Some(BorderLocation::Bottom)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 11)),
+        Some(BorderLocation::Bottom)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 70)),
+        Some(BorderLocation::Bottom)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 130)),
+        Some(BorderLocation::BottomRight)
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 131)),
+        None
+    );
 
     // row below pane: no border
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 70)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 131)));
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 10)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 11)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 70)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 130)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 131)),
+        None
+    );
 }
 
 #[test]
@@ -620,51 +794,138 @@ pub fn frameless_pane_position_is_on_frame() {
     terminal_pane.set_content_offset(Offset::default());
 
     // row above pane: no border
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 9)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 70)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 129)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(9, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(9, 9)), None);
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(9, 10)), None);
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(9, 11)), None);
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(9, 70)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(9, 129)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(9, 130)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(9, 131)),
+        None
+    );
 
     // first row: no border
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 9)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 70)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 129)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(10, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(10, 9)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 10)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 11)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 70)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 129)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 130)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(10, 131)),
+        None
+    );
 
     // second row: no border
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 9)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 70)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(11, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(11, 9)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 10)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 11)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 70)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 130)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(11, 131)),
+        None
+    );
 
     // random row in the middle: no border
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 9)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 70)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(15, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(15, 9)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 10)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 11)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 70)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 130)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(15, 131)),
+        None
+    );
 
     // last row: no border
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(29, 9)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(29, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(29, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(29, 70)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(29, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(29, 131)));
+    assert_eq!(terminal_pane.position_on_frame(&Position::new(29, 9)), None);
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 10)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 11)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 70)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 130)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(29, 131)),
+        None
+    );
 
     // row below pane: no border
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 10)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 11)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 70)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 130)));
-    assert!(!terminal_pane.position_is_on_frame(&Position::new(30, 131)));
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 10)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 11)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 70)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 130)),
+        None
+    );
+    assert_eq!(
+        terminal_pane.position_on_frame(&Position::new(30, 131)),
+        None
+    );
 }

@@ -182,6 +182,19 @@ pub(crate) struct TabData {
     pub colors: Palette,
 }
 
+/// Represents the cardinal positions on the border of a pane
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum BorderLocation {
+    Left,
+    TopLeft,
+    Top,
+    TopRight,
+    Right,
+    BottomRight,
+    Bottom,
+    BottomLeft,
+}
+
 // FIXME: Use a struct that has a pane_type enum, to reduce all of the duplication
 pub trait Pane {
     fn x(&self) -> usize;
@@ -340,32 +353,31 @@ pub trait Pane {
     fn relative_position(&self, position_on_screen: &Position) -> Position {
         position_on_screen.relative_to(self.get_content_y(), self.get_content_x())
     }
-    fn position_is_on_frame(&self, position: &Position) -> bool {
+    fn position_on_frame(&self, position: &Position) -> Option<BorderLocation> {
         if !self.contains(position) {
-            return false;
+            return None;
         }
-        if (self.x()..self.get_content_x()).contains(&position.column()) {
-            // position is on left border
-            return true;
-        }
-        if (self.get_content_x() + self.get_content_columns()..(self.x() + self.cols()))
-            .contains(&position.column())
-        {
-            // position is on right border
-            return true;
-        }
-        if (self.y() as isize..self.get_content_y() as isize).contains(&position.line()) {
-            // position is on top border
-            return true;
-        }
-        if ((self.get_content_y() + self.get_content_rows()) as isize
+        let left_edge = (self.x()..self.get_content_x()).contains(&position.column());
+        let right_edge = (self.get_content_x() + self.get_content_columns()
+            ..(self.x() + self.cols()))
+            .contains(&position.column());
+        let top_edge =
+            (self.y() as isize..self.get_content_y() as isize).contains(&position.line());
+        let bottom_edge = ((self.get_content_y() + self.get_content_rows()) as isize
             ..(self.y() + self.rows()) as isize)
-            .contains(&position.line())
-        {
-            // position is on bottom border
-            return true;
+            .contains(&position.line());
+
+        match (left_edge, right_edge, top_edge, bottom_edge) {
+            (true, false, true, false) => Some(BorderLocation::TopLeft),
+            (true, false, false, true) => Some(BorderLocation::BottomLeft),
+            (false, true, true, false) => Some(BorderLocation::TopRight),
+            (false, true, false, true) => Some(BorderLocation::BottomRight),
+            (true, false, false, false) => Some(BorderLocation::Left),
+            (false, true, false, false) => Some(BorderLocation::Right),
+            (false, false, true, false) => Some(BorderLocation::Top),
+            (false, false, false, true) => Some(BorderLocation::Bottom),
+            _ => None,
         }
-        false
     }
     fn store_pane_name(&mut self);
     fn load_pane_name(&mut self);
@@ -2571,7 +2583,7 @@ impl Tab {
         {
             let relative_position = pane.relative_position(position);
             if let Some(mouse_event) = pane.mouse_left_click(&relative_position, false) {
-                if !pane.position_is_on_frame(position) {
+                if pane.position_on_frame(position).is_none() {
                     self.write_to_active_terminal(mouse_event.into_bytes(), client_id)
                         .with_context(err_context)?;
                 }
@@ -2601,7 +2613,7 @@ impl Tab {
         {
             let relative_position = pane.relative_position(position);
             if let Some(mouse_event) = pane.mouse_right_click(&relative_position, false) {
-                if !pane.position_is_on_frame(position) {
+                if pane.position_on_frame(position).is_none() {
                     self.write_to_active_terminal(mouse_event.into_bytes(), client_id)
                         .with_context(err_context)?;
                 }
@@ -2628,7 +2640,7 @@ impl Tab {
         {
             let relative_position = pane.relative_position(position);
             if let Some(mouse_event) = pane.mouse_middle_click(&relative_position, false) {
-                if !pane.position_is_on_frame(position) {
+                if pane.position_on_frame(position).is_none() {
                     self.write_to_active_terminal(mouse_event.into_bytes(), client_id)
                         .with_context(err_context)?;
                 }
